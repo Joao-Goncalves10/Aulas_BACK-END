@@ -12,6 +12,6 @@ const pool = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0 //lista de espera ilimitada quando coloco 0.
-})// aqui ainda não criou conexão com o banco de dados, aqui estão as informações necessárias para poder ingressar.
+}) // aqui ainda não criou conexão com o banco de dados, aqui estão as informações necessárias para poder ingressar.
 
-module.exports = pool 
+module.exports = pool
