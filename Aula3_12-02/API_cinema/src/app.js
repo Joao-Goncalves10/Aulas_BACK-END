@@ -15,16 +15,6 @@ const queryAsync = (sql, values = []) => { //criação da função Async
     })
 }
 
-// app.get('/', (req,res) => {
-//     res.send("API CINEMA")
-// })
-
-// app.get('/filmes', (req,res) => {
-//     pool.query('SELECT * FROM filme', (err, results) =>{
-//         res.json(results)
-//     })
-// })
-
 app.get('/filmes', async (req,res) => {
     try{
         const filmes = await queryAsync('SELECT * FROM filme')
@@ -81,7 +71,7 @@ app.get('/filmes/:id', async (req,res) => {
     }
 })
 
-app.post('/filmes', async(req,res) =>{
+app.post('/filmes', async(req,res) => {
     try {
         const {titulo, genero, duracao, classificacao, data_lancamento} = req.body
 
@@ -401,5 +391,9 @@ app.delete('/salas/:id', async (req,res) =>{
         })
     }
 })
+
+/////////// Seção aula 26-03 /////////////////////////////////////////////////////////////////////////
+
+
 
 module.exports = app
