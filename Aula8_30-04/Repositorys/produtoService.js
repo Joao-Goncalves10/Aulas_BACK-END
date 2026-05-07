@@ -1,10 +1,12 @@
 const produtoRepository = require('../Repositorys/produtoRepository')
 
 class produtoService {
-    listarProdutos() {
+    // IMPORTANTE: Toda função que usa 'await' deve ser marcada como 'async'
+    async listarProdutos() {
+        // O Service solicita os dados ao Repository (Banco de Dados)
         const produtos = await produtoRepository.listarProdutos()
 
-        return{
+        return {
             sucesso: true,
             dados: produtos,
             total: produtos.length
@@ -12,8 +14,9 @@ class produtoService {
     }
 
     async buscarProdutoPorId(id) {
+        // Validação de entrada: evita processar IDs que claramente não são números
         if (!id || isNaN(id)) {
-            throw{
+            throw {
                 status: 400,
                 mensagem: "ID inválido"
             }
@@ -21,8 +24,9 @@ class produtoService {
 
         const produto = await produtoRepository.buscarProdutoPorID(id)
 
-        if(produto) {
-            throw{
+        // CORREÇÃO: O erro deve ser lançado se o produto NÃO for encontrado (!produto)
+        if (!produto) {
+            throw {
                 status: 404,
                 mensagem: "Produto não encontrado"
             }
@@ -30,7 +34,11 @@ class produtoService {
 
         return {
             sucesso: true,
-            dados: produto[0]
+            // Como o Repository geralmente retorna um array ou o objeto direto, 
+            // ajustamos aqui para garantir o retorno do dado correto.
+            dados: produto 
         }
     }
 }
+
+module.exports = new produtoService()

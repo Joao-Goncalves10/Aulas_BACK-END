@@ -1,38 +1,51 @@
 const produtoRepository = require("./produtoRepository")
 
 class ProdutoService {
+    async listarProduto() {
+        // Importante: O Service chama o Repository para buscar os dados brutos
+        return await produtoRepository.listarProdutos()
+    }
+
     async buscarProdutoPorId(id) {
-        // Simulando uma busca em um banco de dados
+        if (!id || isNaN(id)) {
+            throw { status: 400, mensagem: 'Id inválido' }
+        }
+        const produto = await produtoRepository.buscarProdutoPorID(id)
+        if (!produto) {
+            throw { status: 404, mensagem: 'Produto não encontrado' }
+        }
+        return produto
     }
 
     async cadastrarProduto(dados) {
-        // Simulando o cadastro de um produto
-        const {nome, descricao, preco, categoria, disponibilidade} = dados
+        const { nome, descricao, preco, categoria, disponibilidade } = dados
 
-        if(!nome || !descricao || !preco || !categoria || disponibilidade === undefined) {
-            throw{
+        // Validação de Presença: Garante que dados essenciais existam antes de chegar ao Banco
+        if (!nome || !descricao || !preco || !categoria || disponibilidade === undefined) {
+            throw {
                 status: 400,
-                mensagem: 'Nome, descrição e preço são obrigatórios'
+                mensagem: 'Nome, descrição, preço, categoria e disponibilidade são obrigatórios'
             }
-            
         }
 
-        if(typeof preco !== 'number' || preco <= 0) {
-            throw{
+        // Validação de Tipo e Valor: Evita erros de lógica financeira ou de banco
+        if (typeof preco !== 'number' || preco <= 0) {
+            throw {
                 status: 400,
-                mensagem: 'Preço deve ser um numero positivo'
+                mensagem: 'Preço deve ser um número positivo'
             }
         }
 
         const novoProduto = {
-            nome: nome.trim(),
+            nome: nome.trim(), // Sanitização: remove espaços inúteis no início e fim
             descricao: descricao.trim(),
             preco,
             categoria: categoria || null,
-            disponibilidade: disponibilidade || true
+            disponibilidade: disponibilidade !== undefined ? disponibilidade : true
         }
 
-        const resultado = await ProdutoRepository.cadastrarProduto(novoProduto)
+        // CORREÇÃO: "ProdutoRepository" estava com 'P' maiúsculo, o nome da const é minúsculo
+        const resultado = await produtoRepository.cadastrarProduto(novoProduto)
 
         return {
             sucesso: true,
@@ -42,46 +55,37 @@ class ProdutoService {
     }
 
     async atualizarProduto(id, dados) {
-        if(!id || isNaN(id)) {
-            throw{
-                status: 400,
-                mensagem: 'Id inválido'
-            }
+        if (!id || isNaN(id)) {
+            throw { status: 400, mensagem: 'Id inválido' }
         }
 
-        const produtoId = await produtoRepository.buscarProdutoPorID(id)
+        // Regra de Negócio: Não se atualiza o que não existe. Verificamos primeiro.
+        const produtoExistente = await produtoRepository.buscarProdutoPorID(id)
 
-        if(!produtoId) {
-            throw{
-                status: 404,
-                mensagem: 'Produto não encontrado!'
-            }
+        if (!produtoExistente) {
+            throw { status: 404, mensagem: 'Produto não encontrado!' }
         }
 
         const produtoAtualizado = {}
+        const { nome, descricao, preco, categoria, disponibilidade } = dados
 
-        const {nome, descricao, preco, categoria, disponibilidade} = dados
-
-        if(nome !== undefined) produtoAtualizado.nome = nome.trim()
-
-        if(descricao !== undefined) produtoAtualizado.descricao = descricao.trim()
+        // Atualização Parcial: Só adiciona ao objeto o que foi de fato enviado
+        if (nome !== undefined) produtoAtualizado.nome = nome.trim()
+        if (descricao !== undefined) produtoAtualizado.descricao = descricao.trim()
         
-        if(preco !== undefined) {
-            if(typeof preco !== 'number' || preco <= 0) {
-                throw {
-                    status: 400,
-                    mensagem: 'Preco deve ser um número positivo'
-                }
+        if (preco !== undefined) {
+            if (typeof preco !== 'number' || preco <= 0) {
+                throw { status: 400, mensagem: 'Preço deve ser um número positivo' }
             }
             produtoAtualizado.preco = preco
         }
 
-        if(categoria !== undefined) produtoAtualizado.categoria = categoria
+        if (categoria !== undefined) produtoAtualizado.categoria = categoria
+        if (disponibilidade !== undefined) produtoAtualizado.disponibilidade = disponibilidade
 
-        if(disponibilidade !== undefined) produtoAtualizado.disponibilidade = disponibilidade
-
-        if(Object.keys(produtoAtualizado).length == 0) {
-            throw{
+        // Segurança: Evita chamadas desnecessárias ao banco se o objeto estiver vazio
+        if (Object.keys(produtoAtualizado).length === 0) {
+            throw {
                 status: 400,
                 mensagem: 'Nenhum dado válido enviado para atualização'
             }
@@ -95,22 +99,17 @@ class ProdutoService {
     }
 
     async deletarProduto(id) {
-        if(!id || isNaN(id)) {
-            throw{
-                status: 400,
-                mensagem: 'Id inválido'
-            }
+        if (!id || isNaN(id)) {
+            throw { status: 400, mensagem: 'Id inválido' }
         }
 
         const idProduto = await produtoRepository.buscarProdutoPorID(id)
 
-        if(!idProduto) {
-            throw {
-                status: 400,
-                mensagem: 'Produto não encontrado.'
-            }
+        if (!idProduto) {
+            throw { status: 404, mensagem: 'Produto não encontrado.' }
         }
 
+        // CORREÇÃO: No Repository o nome do método é apagarProduto
         await produtoRepository.apagarProduto(id)
 
         return {
@@ -119,3 +118,6 @@ class ProdutoService {
         }
     }
 }
+
+// Exportando como instância para facilitar o uso no Controller
+module.exports = new ProdutoService()
