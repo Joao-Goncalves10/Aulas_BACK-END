@@ -2,7 +2,17 @@
 
 app.get('/usuarios', async (req, res) => {
     const usuarios = await queryAsync("SELECT * FROM usuario")
-    res.json(usuarios)
+    try {
+        res.status(500).json({
+            sucesso: true,
+            mensagem: usuarios
+    })
+    } catch (erro) {
+        res.status(404).json({
+            sucesso: true,
+            mensagem: 'Usuários não encontrados'
+        })
+    }
 })
 
 app.get('/usuarios/:id', async (req, res) => {
@@ -15,7 +25,7 @@ app.get('/usuarios/:id', async (req, res) => {
             mensagem: 'Usuário não encontrado'
     });
     } else {
-        res.json({
+        res.status(500).json({
             sucesso: true,
             mensagem: usuarios[0]
         });
@@ -50,23 +60,32 @@ app.post('/pedidos', async (req, res) => {
 
 //Exercício 3 - Salas
 
+const validarDadosAtualizados(dados, res) => {
+    if (salaExiste.length === 0) {
+        res.status(404).json({
+            sucesso: false,
+            mensagem: "nenhum dado encontrado"
+        })
+        return false
+    }
+    return true
+}
+
 app.put('/salas/:id', async (req, res) => {
     const {id} = req.params
     const {dados} = req.body
 
     const salaExiste = await queryAsync("SELECT * FROM sala WHERE id = ?", [id])
-    if (salaExiste.length === 0) {
-        return res.status(404).json({
-            sucesso: false,
-            mensagem: "nao há o ID de sala informado"
-        })
-    }
 
     await queryAsync("UPDATE sala SET ? WHERE id = ?", [dados, id]);
     res.json({
         sucesso: true,
         mensagem: "Sala atualizada"
     })
+
+    validarDadosAtualizados() {
+        return
+    }
 })
 
 app.delete('/salas/:id', async (req, res) => {
