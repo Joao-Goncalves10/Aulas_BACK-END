@@ -3,7 +3,7 @@ const router = express.Router()
 
 // CORREÇÃO: Removi a importação duplicada. 
 // Mantenha apenas uma, preferencialmente combinando com o nome usado nas rotas abaixo.
-const ProdutoController = require('../Repositorys/produtoController')
+const ProdutoController = require('./produtoController')
 
 // O Router do Express serve para agrupar as rotas e manter o arquivo principal (app.js) limpo.
 

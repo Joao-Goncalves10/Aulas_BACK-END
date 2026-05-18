@@ -1,4 +1,4 @@
-const produtoRepository = require('../Repositorys/produtoRepository')
+const produtoRepository = require('./produtoRepository')
 
 class produtoService {
     // IMPORTANTE: Toda função que usa 'await' deve ser marcada como 'async'
